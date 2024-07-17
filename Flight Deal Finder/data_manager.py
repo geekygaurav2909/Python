@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 SHEETY_URL = os.getenv("SHEETY_API_URL")
+SHEETY_USERS_URL = os.getenv("SHEETY_USER_URL")
 
 
 class DataManager:
@@ -21,6 +22,12 @@ class DataManager:
                               if record["iataCode"] == ""]
         self.destination_data = {}
 
+        # Adding up users data
+        self._user_token = os.getenv("SHEETY_USER_TOKEN")
+        self.sheety_users_headers = {
+            "Authorization": self._user_token
+        }
+
     def get_destination_data(self):
         self.destination_data = self.content["prices"]
         return self.destination_data
@@ -33,3 +40,10 @@ class DataManager:
         }
         update_resp = reqs.put(url=f"{SHEETY_URL}/{row_id}", json=body_param, headers=self.sheety_headers)
         return update_resp.json()
+
+    def get_customer_emails(self):
+        user_response = reqs.get(url=SHEETY_USERS_URL, headers=self.sheety_users_headers)
+        user_mail = user_response.json()["users"]
+        email_data = [user["whatIsYourEmail?"] for user in user_mail]
+        return email_data
+
